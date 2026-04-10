@@ -15,7 +15,7 @@ const createTutorProfile = async (data: TutorProfile, user: User) => {
   if (!existsCategory) {
     return {
       success: false,
-      message: "Your category is missing",
+      message: "Category is missing",
     };
   }
 
@@ -29,7 +29,7 @@ const createTutorProfile = async (data: TutorProfile, user: User) => {
   if (existTutorProfile) {
     return {
       success: false,
-      message: "Your are already created tutor profile",
+      message: "You have already created a tutor profile",
     };
   }
 
@@ -135,7 +135,7 @@ const getOwnTutorProfile = async (userId: string) => {
   if (!tutorProfile) {
     return {
       success: false,
-      message: "You don't have any tutor profile",
+      message: "No tutor profile found",
     };
   }
 
@@ -145,7 +145,80 @@ const getOwnTutorProfile = async (userId: string) => {
   };
 };
 
-//
+// UPDATE profile
+const updateTutorProfile = async (
+  profileId: string,
+  data: Partial<TutorProfile>,
+  user: User,
+) => {
+  try {
+    // 1. get old data
+    const oldProfileData = await prisma.tutor.findUnique({
+      where: {
+        id: profileId,
+      },
+    });
+
+    if (!oldProfileData) {
+      return {
+        success: false,
+        message: "No profile found",
+      };
+    }
+
+    // 2. Empty data check
+    if (Object.keys(data).length === 0) {
+      return {
+        success: false,
+        message: "No data provided",
+      };
+    }
+
+    // 3. user check
+    if (oldProfileData.userId !== user?.id && user?.role !== UserRole.ADMIN) {
+      throw new Error("You are not allowed to update this profile.");
+    }
+
+    // 4. Update data
+
+    const filteredData = Object.fromEntries(
+      Object.entries(data).filter(([_, value]) => value !== undefined),
+    );
+
+    const updatedProfile = await prisma.tutor.update({
+      where: {
+        id: profileId,
+      },
+      data: filteredData,
+    });
+
+    // 5. find Changes
+    const changes: Record<string, { old: any; new: any }> = {};
+
+    Object.keys(data).forEach((key) => {
+      const field = key as keyof TutorProfile;
+
+      if (oldProfileData[field] !== updatedProfile[field]) {
+        changes[field] = {
+          old: oldProfileData[field],
+          new: updatedProfile[field],
+        };
+      }
+    });
+
+    return {
+      success: true,
+      data: updatedProfile,
+      changes,
+      message: "Profile updated successfully",
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: "Profile update failed",
+    };
+  }
+};
 
 // DELETE profile
 const deleteTutorProfile = async (user: User, profileId: string) => {
@@ -167,7 +240,7 @@ const deleteTutorProfile = async (user: User, profileId: string) => {
   if (existProfile.userId !== userId && user.role !== UserRole.ADMIN) {
     return {
       success: false,
-      message: "You are not authorized for deleting this profile",
+      message: "You are not authorized to delete this profile",
     };
   }
 
@@ -194,8 +267,8 @@ const deleteTutorProfile = async (user: User, profileId: string) => {
     success: true,
     message:
       user.role !== UserRole.ADMIN
-        ? "Your Profile is successfully deleted"
-        : "The tutor profile is successfylly deleted",
+        ? "Your profile has been deleted successfully."
+        : "Tutor profile deleted successfully.",
     data: deleteResult,
   };
 };
@@ -205,4 +278,5 @@ export const tutorProfileService = {
   getAllTutorProfiles,
   getOwnTutorProfile,
   deleteTutorProfile,
+  updateTutorProfile,
 };

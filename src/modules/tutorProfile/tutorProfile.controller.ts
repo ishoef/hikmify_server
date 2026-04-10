@@ -57,6 +57,34 @@ const getOwnTutorProfile = async (req: Request, res: Response) => {
   }
 };
 
+// UPDATE tutor profile
+const updateTutorProfile = async (req: Request, res: Response) => {
+  try {
+    const { profileId } = req.params;
+    const user = req.user;
+    if (!user) {
+      return {
+        success: false,
+        message: "You are not a user, please create an account",
+      };
+    }
+    const result = await tutorProfileService.updateTutorProfile(
+      profileId as string,
+      req.body,
+      user,
+    );
+
+    console.log("Update tutorProfile: ", req.body);
+
+    res.status(200).json(result);
+  } catch (error: any) {
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 // DELETE Profile by user or by admin
 const deleteTutorProfile = async (req: Request, res: Response) => {
   try {
@@ -88,5 +116,6 @@ export const tutorProfileController = {
   createTutorProfile,
   getAllTutorProfiles,
   getOwnTutorProfile,
+  updateTutorProfile,
   deleteTutorProfile,
 };

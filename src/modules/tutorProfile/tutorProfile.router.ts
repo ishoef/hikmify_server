@@ -7,7 +7,7 @@ const router = Router();
 
 router.post(
   "/",
-  authMiddleware(UserRole.USER),
+  authMiddleware(UserRole.USER, UserRole.TUTOR),
   tutorProfileController.createTutorProfile,
 );
 router.get(
@@ -21,6 +21,12 @@ router.get(
   "/own-profile",
   authMiddleware(UserRole.ALL),
   tutorProfileController.getOwnTutorProfile,
+);
+
+router.patch(
+  "/:profileId",
+  authMiddleware(),
+  tutorProfileController.updateTutorProfile,
 );
 
 // DELETE Profile by user or admin

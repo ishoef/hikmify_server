@@ -7,7 +7,6 @@ export interface User {
 }
 
 export interface TutorProfile {
-  userId: string;
   bio?: string;
   subjects: string[];
   experience?: string;
