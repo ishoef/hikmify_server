@@ -1,6 +1,7 @@
 import { prisma } from "../../lib/prisma";
 import { TutorProfile, User } from "../../types/types";
 import { UserRole } from "../../utils/enums";
+import isEqual from "lodash/isEqual";
 
 // CREATE Tutor Profile
 const createTutorProfile = async (data: TutorProfile, user: User) => {
@@ -152,11 +153,9 @@ const updateTutorProfile = async (
   user: User,
 ) => {
   try {
-    // 1. get old data
+    // 1. Get old data
     const oldProfileData = await prisma.tutor.findUnique({
-      where: {
-        id: profileId,
-      },
+      where: { id: profileId },
     });
 
     if (!oldProfileData) {
@@ -166,51 +165,56 @@ const updateTutorProfile = async (
       };
     }
 
-    // 2. Empty data check
-    if (Object.keys(data).length === 0) {
+    // 2. Authorization check
+    if (oldProfileData.userId !== user?.id && user?.role !== UserRole.ADMIN) {
       return {
         success: false,
-        message: "No data provided",
+        message: "You are not allowed to update this profile.",
       };
     }
 
-    // 3. user check
-    if (oldProfileData.userId !== user?.id && user?.role !== UserRole.ADMIN) {
-      throw new Error("You are not allowed to update this profile.");
-    }
-
-    // 4. Update data
-
+    // 3. Filter ONLY real changes (remove undefined + same values)
     const filteredData = Object.fromEntries(
-      Object.entries(data).filter(([_, value]) => value !== undefined),
+      Object.entries(data).filter(([key, value]) => {
+        const field = key as keyof TutorProfile;
+
+        return value !== undefined && !isEqual(oldProfileData[field], value);
+      }),
     );
 
+    // 4. Empty check after filtering
+    if (Object.keys(filteredData).length === 0) {
+      return {
+        success: true,
+        message: "No changes detected",
+        data: oldProfileData,
+      };
+    }
+
+    // 5. Track changes (old vs new)
+    const changes: Record<string, { old: unknown; new: unknown }> = {};
+
+    Object.keys(filteredData).forEach((key) => {
+      const field = key as keyof TutorProfile;
+
+      changes[field] = {
+        old: oldProfileData[field],
+        new: filteredData[field],
+      };
+    });
+
+    // 6. Update DB
     const updatedProfile = await prisma.tutor.update({
-      where: {
-        id: profileId,
-      },
+      where: { id: profileId },
       data: filteredData,
     });
 
-    // 5. find Changes
-    const changes: Record<string, { old: any; new: any }> = {};
-
-    Object.keys(data).forEach((key) => {
-      const field = key as keyof TutorProfile;
-
-      if (oldProfileData[field] !== updatedProfile[field]) {
-        changes[field] = {
-          old: oldProfileData[field],
-          new: updatedProfile[field],
-        };
-      }
-    });
-
+    // 7. Return response
     return {
       success: true,
+      message: "Profile updated successfully",
       data: updatedProfile,
       changes,
-      message: "Profile updated successfully",
     };
   } catch (error) {
     return {

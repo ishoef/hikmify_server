@@ -25,7 +25,7 @@ router.get(
 
 router.patch(
   "/:profileId",
-  authMiddleware(),
+  authMiddleware(UserRole.ADMIN, UserRole.TUTOR),
   tutorProfileController.updateTutorProfile,
 );
 
