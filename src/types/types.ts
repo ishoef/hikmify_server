@@ -15,3 +15,18 @@ export interface TutorProfile {
   availability: string[];
   categoryName: string;
 }
+
+export interface BookingData {
+  tutorId: string;
+  categoryId: string;
+
+  bookingDate: Date;
+  startTime: Date;
+  duration: number;
+
+  notes?: string;
+  meetingLink?: string;
+
+  hourlyPrice?: number;
+  totalPrice?: number;
+}

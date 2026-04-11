@@ -23,6 +23,12 @@ router.get(
   tutorProfileController.getOwnTutorProfile,
 );
 
+router.get(
+  "/:profileId",
+  authMiddleware(UserRole.ALL),
+  tutorProfileController.getSingleTutorProfile,
+);
+
 router.patch(
   "/:profileId",
   authMiddleware(UserRole.ADMIN, UserRole.TUTOR),

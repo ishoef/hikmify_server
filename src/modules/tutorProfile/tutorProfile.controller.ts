@@ -57,6 +57,31 @@ const getOwnTutorProfile = async (req: Request, res: Response) => {
   }
 };
 
+// GET single profile by id
+const getSingleTutorProfile = async (req: Request, res: Response) => {
+  try {
+    const { profileId } = req.params;
+
+    if (!profileId) {
+      return {
+        success: false,
+        message: "Profile Id is missing",
+      };
+    }
+
+    const result = await tutorProfileService.getSingleTutorProfile(
+      profileId as string,
+    );
+
+    res.status(200).json(result);
+  } catch (error: any) {
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 // UPDATE tutor profile
 const updateTutorProfile = async (req: Request, res: Response) => {
   try {
@@ -118,4 +143,5 @@ export const tutorProfileController = {
   getOwnTutorProfile,
   updateTutorProfile,
   deleteTutorProfile,
+  getSingleTutorProfile,
 };

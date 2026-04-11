@@ -146,6 +146,50 @@ const getOwnTutorProfile = async (userId: string) => {
   };
 };
 
+// get single profile by id
+const getSingleTutorProfile = async (profileId: string) => {
+  const result = await prisma.$transaction(async (tx) => {
+    await tx.tutor.update({
+      where: {
+        id: profileId,
+      },
+      data: {
+        profileViews: {
+          increment: 1,
+        },
+      },
+    });
+
+    const profileData = await tx.tutor.findUnique({
+      where: {
+        id: profileId,
+      },
+      include: {
+        user: {
+          select: {
+            name: true,
+            email: true,
+            phone: true,
+            role: true,
+            status: true,
+          },
+        },
+        _count: {
+          select: { bookings: true },
+        },
+      },
+    });
+
+    return profileData;
+  });
+
+  return {
+    success: true,
+    message: "Profile data fetched successfully",
+    data: result,
+  };
+};
+
 // UPDATE profile
 const updateTutorProfile = async (
   profileId: string,
@@ -283,4 +327,5 @@ export const tutorProfileService = {
   getOwnTutorProfile,
   deleteTutorProfile,
   updateTutorProfile,
+  getSingleTutorProfile,
 };

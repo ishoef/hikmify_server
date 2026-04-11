@@ -1,0 +1,48 @@
+import { Request, Response } from "express";
+import { bookingService } from "./booking.service";
+
+const createBooking = async (req: Request, res: Response) => {
+  try {
+    const user = req.user;
+    if (!user) {
+      return {
+        success: false,
+        message: "You are not registered. Please create an account.",
+      };
+    }
+
+    const result = await bookingService.createBooking(req.body, user);
+    res.status(201).json(result);
+  } catch (error: any) {
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// GET bookings
+const getBookings = async (req: Request, res: Response) => {
+  try {
+    const user = req.user;
+    if (!user) {
+      return {
+        success: false,
+        message: "You are not registered. Please create an account.",
+      };
+    }
+
+    const result = await bookingService.getBookings(user);
+    res.status(200).json(result);
+  } catch (error: any) {
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const bookingController = {
+  createBooking,
+  getBookings,
+};
