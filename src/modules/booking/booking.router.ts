@@ -11,5 +11,10 @@ router.post(
   bookingController.createBooking,
 );
 router.get("/", authMiddleware(), bookingController.getBookings);
+router.get(
+  "/:bookingId",
+  authMiddleware(UserRole.USER, UserRole.ADMIN),
+  bookingController.getbookingById,
+);
 
 export const bookingRouter: Router = router;

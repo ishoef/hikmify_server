@@ -230,12 +230,45 @@ const getBookings = async (user: User) => {
   return {
     success: true,
     totalBooking,
-    message: "Bookings data fetched successfully",
+    message:
+      totalBooking === 0
+        ? "No bookings found"
+        : "Bookings fetched successfully",
     data: bookings,
+  };
+};
+
+// GET booking by id
+const getbookingById = async (bookingId: string, user: User) => {
+  const result = await prisma.bookings.findUnique({
+    where: {
+      id: bookingId,
+    },
+  });
+
+  if (!result) {
+    return {
+      success: false,
+      message: "Booking not found",
+    };
+  }
+
+  if (user.id !== result?.studentId && user.role !== UserRole.ADMIN) {
+    return {
+      success: false,
+      message: "You are not authorized to view this booking",
+    };
+  }
+
+  return {
+    success: true,
+    message: "Booking fetched successfylly",
+    data: result,
   };
 };
 
 export const bookingService = {
   createBooking,
   getBookings,
+  getbookingById,
 };

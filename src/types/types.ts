@@ -27,6 +27,6 @@ export interface BookingData {
   notes?: string;
   meetingLink?: string;
 
-  hourlyPrice?: number;
-  totalPrice?: number;
+  hourlyPrice: number;
+  totalPrice: number;
 }
