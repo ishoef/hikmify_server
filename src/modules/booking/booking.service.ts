@@ -14,6 +14,13 @@ const createBooking = async (data: BookingData, user: User) => {
     };
   }
 
+  if (user?.id === data.tutorId) {
+    return {
+      success: false,
+      message: "You are not allowed to book own session",
+    };
+  }
+
   // 2. tutor find
   const tutor = await prisma.tutor.findUnique({
     where: {
@@ -125,19 +132,59 @@ const createBooking = async (data: BookingData, user: User) => {
 
 // GET all bookings
 const getBookings = async (user: User) => {
-  const result = await prisma.bookings.findMany({
-    where: {
-      studentId: user.id,
-    },
-  });
+  
+  
+  let bookings;
+  let totalBooking = 0;
 
-  const totalData = await prisma.bookings.count();
+  if (user.role === UserRole.ADMIN) {
+    bookings = await prisma.bookings.findMany({
+      include: {
+        tutor: {
+          select: {
+            hourlyRate: true,
+            user: {
+              select: {
+                name: true,
+                email: true,
+              },
+            },
+          },
+        },
+        student: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
+        category: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    });
+
+    totalBooking = await prisma.bookings.count();
+  } else {
+    bookings = await prisma.bookings.findMany({
+      where: {
+        studentId: user?.id,
+      },
+    });
+
+    totalBooking = await prisma.bookings.count({
+      where: {
+        studentId: user?.id,
+      },
+    });
+  }
 
   return {
     success: true,
-    data: result,
-    totalData,
+    totalBooking,
     message: "Bookings data fetched successfully",
+    data: bookings,
   };
 };
 
