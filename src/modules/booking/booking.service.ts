@@ -262,13 +262,60 @@ const getbookingById = async (bookingId: string, user: User) => {
 
   return {
     success: true,
-    message: "Booking fetched successfylly",
+    message:
+      user.role === UserRole.ADMIN
+        ? "Booking fetched successfylly as a admin "
+        : "Booking fetched successfylly",
     data: result,
   };
+};
+
+// Delete Booking by id
+const deleteBookingById = async (bookingId: string, user: User) => {
+  try {
+    const existingBooking = await prisma.bookings.findUnique({
+      where: { id: bookingId },
+    });
+
+    if (!existingBooking) {
+      return {
+        success: false,
+        message: "No booking found",
+      };
+    }
+
+    if (existingBooking.studentId !== user.id && user.role !== UserRole.ADMIN) {
+      return {
+        success: false,
+        message: "You are not authorized to delete this booking",
+      };
+    }
+
+    const result = await prisma.bookings.delete({
+      where: {
+        id: bookingId,
+      },
+    });
+
+    return {
+      success: true,
+      message:
+        user.role !== UserRole.ADMIN
+          ? "Your Booking has been deleted successfully."
+          : "User Booking deleted successfully.",
+      data: result,
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: "Booking deletion failed",
+    };
+  }
 };
 
 export const bookingService = {
   createBooking,
   getBookings,
   getbookingById,
+  deleteBookingById,
 };

@@ -16,5 +16,10 @@ router.get(
   authMiddleware(UserRole.USER, UserRole.ADMIN),
   bookingController.getbookingById,
 );
+router.delete(
+  "/:bookingId",
+  authMiddleware(UserRole.ADMIN, UserRole.USER),
+  bookingController.deleteBookingById,
+);
 
 export const bookingRouter: Router = router;

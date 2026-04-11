@@ -68,8 +68,34 @@ const getbookingById = async (req: Request, res: Response) => {
   }
 };
 
+// Booking deletion
+const deleteBookingById = async (req: Request, res: Response) => {
+  try {
+    const user = req.user;
+    const { bookingId } = req.params;
+    if (!user) {
+      return {
+        success: false,
+        message: "You are not registered. Please create an account.",
+      };
+    }
+
+    const result = await bookingService.deleteBookingById(
+      bookingId as string,
+      user,
+    );
+
+    res.status(200).json(result);
+  } catch (error: any) {
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
 export const bookingController = {
   createBooking,
   getBookings,
   getbookingById,
+  deleteBookingById,
 };
