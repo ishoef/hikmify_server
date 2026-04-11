@@ -28,5 +28,5 @@ app.get("/", (req, res) => {
 
 app.use("/category", categoryRouter);
 app.use("/tutors", tutorProfileRouter);
-app.use("/booking", bookingRouter);
+app.use("/bookings", bookingRouter);
 export default app;

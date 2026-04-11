@@ -132,10 +132,21 @@ const createBooking = async (data: BookingData, user: User) => {
 
 // GET all bookings
 const getBookings = async (user: User) => {
-  
-  
   let bookings;
   let totalBooking = 0;
+
+  const tutor = await prisma.tutor.findUnique({
+    where: {
+      userId: user.id,
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+        },
+      },
+    },
+  });
 
   if (user.role === UserRole.ADMIN) {
     bookings = await prisma.bookings.findMany({
@@ -166,10 +177,46 @@ const getBookings = async (user: User) => {
     });
 
     totalBooking = await prisma.bookings.count();
+  } else if (user.role === UserRole.TUTOR) {
+    if (!tutor?.id) {
+      return {
+        success: false,
+        message: "Tutor not found",
+      };
+    }
+    bookings = await prisma.bookings.findMany({
+      where: {
+        tutorId: tutor.id,
+      },
+    });
+
+    totalBooking = await prisma.bookings.count({
+      where: {
+        tutorId: tutor.id,
+      },
+    });
   } else {
     bookings = await prisma.bookings.findMany({
       where: {
         studentId: user?.id,
+      },
+      include: {
+        tutor: {
+          select: {
+            user: {
+              select: {
+                name: true,
+                role: true,
+              },
+            },
+          },
+        },
+        student: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
       },
     });
 
