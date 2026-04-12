@@ -1,8 +1,10 @@
+import { isEqual } from "lodash";
 import { prisma } from "../../lib/prisma";
 import { BookingData, User } from "../../types/types";
 import { UserRole } from "../../utils/enums";
 import { parseTime } from "../../utils/parseTime";
 
+// CREATE booking (only user can create a booking)
 const createBooking = async (data: BookingData, user: User) => {
   const studentId = user?.id;
   // console.log("bookingService: ", data);
@@ -11,13 +13,6 @@ const createBooking = async (data: BookingData, user: User) => {
     return {
       success: false,
       message: "You are not allowed to book this session.",
-    };
-  }
-
-  if (user?.id === data.tutorId) {
-    return {
-      success: false,
-      message: "You are not allowed to book own session",
     };
   }
 
@@ -56,9 +51,28 @@ const createBooking = async (data: BookingData, user: User) => {
   }
 
   // merge date and time
-  const { hours, minutes } = parseTime(data.startTime.toString());
-  const finalStartTime = new Date(bookingDate);
-  finalStartTime.setHours(hours ?? 0, minutes ?? 0, 0, 0);
+  // const { hours, minutes } = parseTime(data.startTime.toString());
+
+  let hours: number = 0;
+  let minutes: number = 0;
+
+  if (data.startTime) {
+    const parsed = parseTime(data.startTime.toString());
+    hours = parsed.hours ?? 0;
+    minutes = parsed.minutes ?? 0;
+  }
+
+  const finalStartTime = new Date(
+    Date.UTC(
+      bookingDate.getUTCFullYear(),
+      bookingDate.getUTCMonth(),
+      bookingDate.getUTCDate(),
+      hours,
+      minutes,
+      0,
+      0,
+    ),
+  );
 
   // bookingDate convert to Day
   const bookingDay = bookingDate
@@ -101,15 +115,6 @@ const createBooking = async (data: BookingData, user: User) => {
       message: "This time slot is already booked",
     };
   }
-
-  console.log(
-    data,
-    studentId,
-    hourlyPrice,
-    totalPrice,
-    bookingDate,
-    finalStartTime,
-  );
 
   // Create booking
   const result = await prisma.bookings.create({
@@ -270,6 +275,243 @@ const getbookingById = async (bookingId: string, user: User) => {
   };
 };
 
+// UPDATE booking data (only booking owner)
+const updateBooking = async (
+  data: BookingData,
+  bookingId: string,
+  user: User,
+) => {
+  try {
+    // 1. Get existing booking
+    const existingBooking = await prisma.bookings.findUnique({
+      where: { id: bookingId },
+      include: { tutor: true },
+    });
+
+    if (!existingBooking) {
+      return {
+        success: false,
+        message: "Booking not found",
+      };
+    }
+
+    // 2. Authorization check
+    if (existingBooking.studentId !== user.id && user.role !== UserRole.ADMIN) {
+      return {
+        success: false,
+        message: "You are not authorized to update this booking",
+      };
+    }
+
+    // 3. Filter only changed fields
+
+    const USER_ALLOWED_FIELDS: (keyof BookingData)[] = [
+      "bookingDate",
+      "startTime",
+      "duration",
+      "notes",
+    ];
+
+    const ADMIN_ALLOWED_FIELDS: (keyof BookingData)[] = [
+      "bookingDate",
+      "startTime",
+      "duration",
+      "notes",
+      "status",
+      "totalPrice",
+      "hourlyPrice",
+    ];
+
+    const allowedFields =
+      user.role === UserRole.ADMIN ? ADMIN_ALLOWED_FIELDS : USER_ALLOWED_FIELDS;
+
+    const filteredData = Object.fromEntries(
+      Object.entries(data).filter(([key, value]) => {
+        const field = key as keyof BookingData;
+
+        // block non-allowed fields
+        if (!allowedFields.includes(field)) return false;
+
+        // remove invalid values
+        if (value === undefined || value === null) return false;
+
+        // remove unchanged values
+        return !isEqual(existingBooking[field], value);
+      }),
+    ) as Partial<BookingData>;
+
+    if (Object.keys(filteredData).length === 0) {
+      return {
+        success: true,
+        message: "No changes detected",
+        data: existingBooking,
+      };
+    }
+
+    // 4. Pricing calculation
+    const hourlyPrice = existingBooking.tutor?.hourlyRate as number;
+    const duration = filteredData.duration ?? existingBooking.duration;
+
+    const totalPrice = hourlyPrice * duration;
+
+    filteredData.hourlyPrice = hourlyPrice;
+    filteredData.totalPrice = totalPrice;
+    filteredData.duration = duration;
+
+    // 5. Normalize bookingDate
+    const bookingDate = filteredData.bookingDate
+      ? new Date(filteredData.bookingDate)
+      : new Date(existingBooking.bookingDate);
+
+    if (isNaN(bookingDate.getTime())) {
+      return {
+        success: false,
+        message: "Invalid booking date",
+      };
+    }
+
+    // ensure Date object is stored
+    filteredData.bookingDate = bookingDate;
+
+    // 6. Normalize startTime
+    let hours: number;
+    let minutes: number;
+
+    if (filteredData.startTime) {
+      // if new startTime provided → use it
+      const parsed = parseTime(filteredData.startTime.toString());
+      hours = parsed.hours ?? 0;
+      minutes = parsed.minutes ?? 0;
+    } else {
+      // if NOT provided → extract from existing startTime (IMPORTANT FIX)
+      const existingStart = new Date(existingBooking.startTime);
+      hours = existingStart.getHours();
+      minutes = existingStart.getMinutes();
+    }
+
+    // const finalStartTime = new Date(bookingDate);
+    // finalStartTime.setHours(hours ?? 0, minutes ?? 0, 0, 0);
+
+    // FIX The 1 day mismatch by Using UTC
+    const finalStartTime = new Date(
+      Date.UTC(
+        bookingDate.getUTCFullYear(),
+        bookingDate.getUTCMonth(),
+        bookingDate.getUTCDate(),
+        hours,
+        minutes,
+        0,
+        0,
+      ),
+    );
+
+    // checking the time will be in future
+    const now = new Date();
+
+    const mianAllowedTime = new Date(now.getTime() + 10 * 60 * 1000);
+    if (finalStartTime < mianAllowedTime) {
+      return {
+        success: false,
+        message: "You must select a future time slot",
+      };
+    }
+
+    // ensure Date object
+    filteredData.startTime = finalStartTime;
+
+    // 7. Availability check
+   const bookingDay = new Intl.DateTimeFormat("en-US", {
+     weekday: "long",
+     timeZone: "UTC",
+   })
+     .format(bookingDate)
+     .toLowerCase();
+
+    if (!existingBooking.tutor?.availability?.includes(bookingDay)) {
+      return {
+        success: false,
+        message: `Tutor is not available on ${bookingDay}`,
+      };
+    }
+
+    // 8. Calculate end time
+    const endTime = new Date(finalStartTime);
+    endTime.setHours(endTime.getHours() + duration);
+
+    // 9. Conflict check (exclude current booking)
+    const allExistingBookings = await prisma.bookings.findMany({
+      where: {
+        tutorId: existingBooking.tutorId,
+        id: { not: bookingId },
+        status: {
+          in: ["PENDING", "CONFIRMED"],
+        },
+      },
+    });
+
+    const isConflict = allExistingBookings.some((booking) => {
+      const existingStart = new Date(booking.startTime);
+      const existingEnd = new Date(existingStart);
+
+      existingEnd.setHours(existingEnd.getHours() + booking.duration);
+
+      return finalStartTime < existingEnd && endTime > existingStart;
+    });
+
+    if (isConflict) {
+      return {
+        success: false,
+        message:
+          "This time slot is already booked. Please choose another slot.",
+      };
+    }
+
+    // fully filter the uncahnged data 
+    const changedData = Object.fromEntries(
+      Object.entries(filteredData).filter(([key, value]) => {
+        const field = key as keyof BookingData;
+
+        return value !== undefined && !isEqual(existingBooking[field], value);
+      }),
+    );
+
+    // 10. Track changes
+    const changes: Record<string, { old: unknown; new: unknown }> = {};
+
+    Object.keys(changedData).forEach((key) => {
+      const field = key as keyof BookingData;
+
+      changes[field] = {
+        old: existingBooking[field],
+        new: changedData[field],
+      };
+    });
+
+    // 11. Update DB (FINAL CLEAN DATA)
+    const updatedBooking = await prisma.bookings.update({
+      where: { id: bookingId },
+      data: filteredData,
+    });
+
+    return {
+      success: true,
+      message:
+        user.role !== UserRole.ADMIN
+          ? "Your booking updated successfully"
+          : "User booking updated successfully",
+      changes,
+      data: updatedBooking,
+    };
+  } catch (error: any) {
+    console.error("Update Booking Error:", error);
+    return {
+      success: false,
+      message: "Booking update failed",
+      error: error.message,
+    };
+  }
+};
+
 // Delete Booking by id
 const deleteBookingById = async (bookingId: string, user: User) => {
   try {
@@ -318,4 +560,5 @@ export const bookingService = {
   getBookings,
   getbookingById,
   deleteBookingById,
+  updateBooking,
 };

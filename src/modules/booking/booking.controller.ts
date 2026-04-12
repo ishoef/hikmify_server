@@ -68,6 +68,33 @@ const getbookingById = async (req: Request, res: Response) => {
   }
 };
 
+// Update booking by owner or admin
+const updateBooking = async (req: Request, res: Response) => {
+  try {
+    const user = req.user;
+    const { bookingId } = req.params;
+    if (!user) {
+      return {
+        success: false,
+        message: "You are not registered. Please create an account.",
+      };
+    }
+
+    const result = await bookingService.updateBooking(
+      req.body,
+      bookingId as string,
+      user,
+    );
+
+    res.status(200).json(result);
+  } catch (error: any) {
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 // Booking deletion
 const deleteBookingById = async (req: Request, res: Response) => {
   try {
@@ -93,9 +120,11 @@ const deleteBookingById = async (req: Request, res: Response) => {
     });
   }
 };
+
 export const bookingController = {
   createBooking,
   getBookings,
   getbookingById,
   deleteBookingById,
+  updateBooking,
 };

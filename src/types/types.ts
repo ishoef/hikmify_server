@@ -1,3 +1,5 @@
+import { BookingStatus } from "../../generated/prisma/enums";
+
 export interface User {
   id: string;
   email: string;
@@ -23,7 +25,7 @@ export interface BookingData {
   bookingDate: Date;
   startTime: Date;
   duration: number;
-
+  status?: BookingStatus;
   notes?: string;
   meetingLink?: string;
 
