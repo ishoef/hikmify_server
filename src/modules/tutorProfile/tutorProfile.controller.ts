@@ -9,7 +9,7 @@ const createTutorProfile = async (req: Request, res: Response) => {
     if (!user) {
       return {
         success: false,
-        message: "You are not a user, Please login and try again",
+        message: "You are not a user, please create an account",
       };
     }
 

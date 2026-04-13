@@ -10,11 +10,7 @@ router.post(
   authMiddleware(UserRole.USER, UserRole.TUTOR),
   tutorProfileController.createTutorProfile,
 );
-router.get(
-  "/",
-  authMiddleware(UserRole.ADMIN, UserRole.USER, UserRole.TUTOR),
-  tutorProfileController.getAllTutorProfiles,
-);
+router.get("/", tutorProfileController.getAllTutorProfiles);
 
 // GET own profile
 router.get(

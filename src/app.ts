@@ -5,6 +5,7 @@ import { categoryRouter } from "./modules/category/category.router";
 import { auth } from "./lib/auth";
 import { tutorProfileRouter } from "./modules/tutorProfile/tutorProfile.router";
 import { bookingRouter } from "./modules/booking/booking.router";
+import { reviewRouter } from "./modules/review/review.router";
 
 const app: Application = express();
 
@@ -22,11 +23,13 @@ app.use(express.json());
 app.all("/api/auth/*splate", toNodeHandler(auth));
 
 app.get("/", (req, res) => {
-  console.log("server is running");
   res.send("The server of Hikmify is running");
 });
 
+// All Routes
 app.use("/category", categoryRouter);
 app.use("/tutors", tutorProfileRouter);
 app.use("/bookings", bookingRouter);
+app.use("/reviews", reviewRouter);
+
 export default app;
