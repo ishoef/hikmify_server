@@ -43,10 +43,32 @@ const allReviews = async (req: Request, res: Response) => {
   }
 };
 
+// get my-reviews
+const getMyreviews = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return {
+        success: false,
+        message: "You are not a user, please create an account",
+      };
+    }
+    const result = await reviewService.getMyreviews(userId);
+    res.status(200).json(result);
+  } catch (error: any) {
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 // delete reivew
 const deleteReview = async (req: Request, res: Response) => {
   try {
     const user = req.user;
+    const { reviewId } = req.params;
 
     if (!user) {
       return {
@@ -54,7 +76,7 @@ const deleteReview = async (req: Request, res: Response) => {
         message: "You are not a user, please create an account",
       };
     }
-    const result = await reviewService.deleteReview();
+    const result = await reviewService.deleteReview(reviewId as string, user);
     res.status(200).json(result);
   } catch (error: any) {
     res.status(400).json({
@@ -67,5 +89,6 @@ const deleteReview = async (req: Request, res: Response) => {
 export const reviewController = {
   createReview,
   allReviews,
+  getMyreviews,
   deleteReview,
 };
