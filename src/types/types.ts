@@ -32,3 +32,5 @@ export interface BookingData {
   hourlyPrice: number;
   totalPrice: number;
 }
+
+

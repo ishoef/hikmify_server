@@ -1,3 +1,4 @@
+import { isEqual } from "lodash";
 import { BookingStatus, Review } from "../../../generated/prisma/client";
 import { prisma } from "../../lib/prisma";
 import { User } from "../../types/types";
@@ -134,10 +135,14 @@ const allReviews = async (user: User) => {
       message: "You are not authorized to access this resource",
     };
   }
-  const reviews = await prisma.review.findMany();
-  const totalReview = await prisma.review.count();
-  const totalUser = await prisma.user.count();
-  const totalTutor = await prisma.tutor.count();
+  const [reviews, totalReview, totalUser, totalTutor, totalBooking] =
+    await Promise.all([
+      prisma.review.findMany(),
+      prisma.review.count(),
+      prisma.user.count(),
+      prisma.tutor.count(),
+      prisma.bookings.count(),
+    ]);
 
   return {
     success: true,
@@ -145,42 +150,177 @@ const allReviews = async (user: User) => {
       reviews.length === 0
         ? "No review found"
         : "All review fetched successfully",
-    data: { reviews, totalReview, totalUser, totalTutor },
+    data: { totalReview, totalUser, totalTutor, totalBooking, reviews },
   };
 };
 
 // Get my-reivews
-const getMyreviews = async (userId: string) => {
+const getMyReviews = async (userId: string) => {
   try {
-    const reviews = await prisma.review.findMany({
-      where: {
-        studentId: userId,
-      },
-    });
-
-    const totalBooking = await prisma.bookings.count({
-      where: {
-        studentId: userId,
-      },
-    });
-    const totalReview = await prisma.review.count({
-      where: {
-        studentId: userId,
-      },
-    });
+    const [reviews, totalBooking, totalReview] = await Promise.all([
+      prisma.review.findMany({
+        where: { studentId: userId },
+        include: { tutor: true, booking: true },
+      }),
+      prisma.bookings.count({
+        where: { studentId: userId },
+      }),
+      prisma.review.count({
+        where: { studentId: userId },
+      }),
+    ]);
 
     return {
       success: true,
       message:
-        reviews.length === 0
+        totalReview === 0
           ? "You don't have any review"
           : "All review fetched successfully",
       data: { totalBooking, totalReview, reviews },
     };
   } catch (error: any) {
+    console.error("Get My reviews Errro:", error);
+
     return {
       success: false,
-      message: "My reviews fetched failed",
+      message: "Reviews fetched failed",
+    };
+  }
+};
+
+// update reviews
+const updateReview = async (
+  reviewId: string,
+  user: User,
+  data: Partial<Review>,
+) => {
+  try {
+    // Validate rating range (must be between 1 and 5)
+    const rating = data.rating;
+    if (rating !== undefined && (rating < 1 || rating > 5)) {
+      return {
+        success: false,
+        message: "Rating must be between 1 and 5",
+      };
+    }
+
+    // get old review data
+    const existingReview = await prisma.review.findUnique({
+      where: {
+        id: reviewId,
+      },
+    });
+
+    // existing check
+    if (!existingReview) {
+      return {
+        success: false,
+        message: "The review not found",
+      };
+    }
+
+    // authentication check
+    if (user.id !== existingReview.studentId && user.role !== UserRole.ADMIN) {
+      return {
+        success: false,
+        message: "You are not authorized to update this review",
+      };
+    }
+
+    // filter ONLY real changes
+    const filteredData = Object.fromEntries(
+      Object.entries(data).filter(([key, value]) => {
+        const field = key as keyof Review;
+
+        return value !== undefined && !isEqual(existingReview[field], value);
+      }),
+    );
+
+    // Empty check after filtering
+    if (Object.keys(filteredData).length === 0) {
+      return {
+        success: true,
+        message: "No changes detected",
+        data: existingReview,
+      };
+    }
+
+    // Track changes (old vs new)
+    const changes: Record<string, { old: unknown; new: unknown }> = {};
+
+    Object.keys(filteredData).forEach((key) => {
+      const field = key as keyof Review;
+
+      changes[field] = {
+        old: existingReview[field],
+        new: filteredData[field],
+      };
+    });
+
+    // finally update review and update tutor profile data
+    const finalResult = await prisma.$transaction(async (tx) => {
+      const tutor = await tx.tutor.findUnique({
+        where: { id: existingReview.tutorId },
+        select: {
+          averageRating: true,
+          totalreviews: true,
+        },
+      });
+
+      if (!tutor) {
+        throw new Error("Tutor not found");
+      }
+
+      if (rating !== undefined && rating !== existingReview.rating) {
+        const oldAverage = tutor?.averageRating || 0;
+        const totalreviews = tutor?.totalreviews || 0;
+
+        const oldRating = existingReview.rating;
+        const newRating = data.rating as number;
+
+        let newAverage = 0;
+
+        if (totalreviews === 0) {
+          newAverage = newRating;
+        } else {
+          newAverage =
+            (oldAverage * totalreviews - oldRating + newRating) / totalreviews;
+        }
+
+        const roundedAverage = Number(newAverage.toFixed(1));
+
+        await tx.tutor.update({
+          where: { id: existingReview.tutorId },
+          data: {
+            averageRating: roundedAverage,
+          },
+        });
+      }
+
+      const updatedReview = await tx.review.update({
+        where: {
+          id: reviewId,
+        },
+        data: filteredData,
+        include: {
+          tutor: true,
+        },
+      });
+
+      return updatedReview;
+    });
+
+    return {
+      success: true,
+      message: "Your review updated successfully!",
+      changes,
+      data: finalResult,
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: "Review update failed",
+      error: error.message,
     };
   }
 };
@@ -188,28 +328,6 @@ const getMyreviews = async (userId: string) => {
 // Delete review
 const deleteReview = async (reviewId: string, user: User) => {
   try {
-    // review check
-    const existingReview = await prisma.review.findUnique({
-      where: {
-        id: reviewId,
-      },
-    });
-
-    if (!existingReview) {
-      return {
-        success: false,
-        message: "Review not found",
-      };
-    }
-
-    // authorization check
-    if (existingReview.studentId !== user.id && user.role !== UserRole.ADMIN) {
-      return {
-        success: false,
-        message: "You are not authorized to delete this review",
-      };
-    }
-
     // delete review and update tutor data
     const result = await prisma.$transaction(async (tx) => {
       const existingReview = await tx.review.findUnique({
@@ -228,10 +346,14 @@ const deleteReview = async (reviewId: string, user: User) => {
       });
 
       if (!existingReview) {
-        return {
-          success: false,
-          message: "Review not found",
-        };
+        throw new Error("Review not found");
+      }
+
+      if (
+        existingReview.studentId !== user.id &&
+        user.role !== UserRole.ADMIN
+      ) {
+        throw new Error("Not authorized");
       }
 
       const oldAverage = existingReview?.tutor.averageRating || 0;
@@ -283,6 +405,7 @@ const deleteReview = async (reviewId: string, user: User) => {
 export const reviewService = {
   createReview,
   allReviews,
-  getMyreviews,
+  getMyReviews,
   deleteReview,
+  updateReview,
 };
