@@ -7,8 +7,8 @@
 
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
-    "module": "ESnext",
-    // "moduleResolution": "nodenext",
+    "module": "NodeNext",
+    // "moduleResolution": "NodeNext",
     "target": "esnext",
     "types": [],
     // For nodejs:
@@ -44,5 +44,5 @@
     "esModuleInterop": true
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "generated/prisma"]
+  "exclude": ["node_modules", "dist", "src/generated/prisma"]
 }

@@ -1,4 +1,4 @@
-import { BookingStatus } from "../../generated/prisma/enums";
+import { BookingStatus } from "../generated/prisma/enums";
 
 export interface User {
   id: string;
@@ -32,5 +32,3 @@ export interface BookingData {
   hourlyPrice: number;
   totalPrice: number;
 }
-
-
