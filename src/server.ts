@@ -8,9 +8,9 @@ async function Main() {
     await prisma.$connect();
     console.log("Connected to the database successfully.");
 
-    app.listen(PORT, () => {
-      console.log(`Server is running on the port ${PORT}`);
-    });
+    // app.listen(PORT, () => {
+    //   console.log(`Server is running on the port ${PORT}`);
+    // });
   } catch (error) {
     console.log("An error occurred: ", error);
   }
