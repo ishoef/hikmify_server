@@ -1,7 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.parseTime = void 0;
-const parseTime = (timeStr) => {
+export const parseTime = (timeStr) => {
     // validate format: "10:30 AM"
     if (!timeStr.match(/^\d{1,2}:\d{2} (AM|PM)$/)) {
         return {
@@ -18,5 +15,4 @@ const parseTime = (timeStr) => {
         hours = 0;
     return { hours, minutes };
 };
-exports.parseTime = parseTime;
 //# sourceMappingURL=parseTime.js.map

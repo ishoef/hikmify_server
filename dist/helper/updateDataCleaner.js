@@ -1,8 +1,5 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateDataCleaner = void 0;
-const lodash_1 = require("lodash");
-const updateDataCleaner = (newData, oldData) => {
+import { isEqual } from "lodash";
+export const updateDataCleaner = (newData, oldData) => {
     return Object.fromEntries(Object.entries(newData).filter(([key, value]) => {
         const field = key;
         // remove undefined / null
@@ -15,10 +12,9 @@ const updateDataCleaner = (newData, oldData) => {
         if (typeof value === "number" && isNaN(value))
             return false;
         // remove unchanged values
-        if ((0, lodash_1.isEqual)(value, oldData[field]))
+        if (isEqual(value, oldData[field]))
             return false;
         return true;
     }));
 };
-exports.updateDataCleaner = updateDataCleaner;
 //# sourceMappingURL=updateDataCleaner.js.map

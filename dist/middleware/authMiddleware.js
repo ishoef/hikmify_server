@@ -1,13 +1,11 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const auth_1 = require("../lib/auth");
-const enums_1 = require("../utils/enums");
+import { auth } from "../lib/auth";
+import { UserRole } from "../utils/enums";
 const authMiddleware = (...roles) => {
     return async (req, res, next) => {
         try {
             // For Validate the user
             // Get User Session
-            const session = await auth_1.auth.api.getSession({
+            const session = await auth.api.getSession({
                 headers: req.headers,
             });
             // Session Check
@@ -26,7 +24,7 @@ const authMiddleware = (...roles) => {
                 role: user.role,
                 emailVarified: user.emailVerified,
             };
-            if (roles.includes(enums_1.UserRole.ALL)) {
+            if (roles.includes(UserRole.ALL)) {
                 return next();
             }
             if (roles.length && !roles.includes(req.user?.role)) {
@@ -42,5 +40,5 @@ const authMiddleware = (...roles) => {
         }
     };
 };
-exports.default = authMiddleware;
+export default authMiddleware;
 //# sourceMappingURL=authMiddleware.js.map

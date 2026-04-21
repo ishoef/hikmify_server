@@ -1,7 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.bookingController = void 0;
-const booking_service_1 = require("./booking.service");
+import { bookingService } from "./booking.service";
 const createBooking = async (req, res) => {
     try {
         const user = req.user;
@@ -11,7 +8,7 @@ const createBooking = async (req, res) => {
                 message: "You are not registered. Please create an account.",
             };
         }
-        const result = await booking_service_1.bookingService.createBooking(req.body, user);
+        const result = await bookingService.createBooking(req.body, user);
         res.status(201).json(result);
     }
     catch (error) {
@@ -31,7 +28,7 @@ const getBookings = async (req, res) => {
                 message: "You are not registered. Please create an account.",
             };
         }
-        const result = await booking_service_1.bookingService.getBookings(user);
+        const result = await bookingService.getBookings(user);
         res.status(200).json(result);
     }
     catch (error) {
@@ -52,7 +49,7 @@ const getbookingById = async (req, res) => {
                 message: "You are not registered. Please create an account.",
             };
         }
-        const result = await booking_service_1.bookingService.getbookingById(bookingId, user);
+        const result = await bookingService.getbookingById(bookingId, user);
         res.status(200).json(result);
     }
     catch (error) {
@@ -73,7 +70,7 @@ const updateBooking = async (req, res) => {
                 message: "You are not registered. Please create an account.",
             };
         }
-        const result = await booking_service_1.bookingService.updateBooking(req.body, bookingId, user);
+        const result = await bookingService.updateBooking(req.body, bookingId, user);
         res.status(200).json(result);
     }
     catch (error) {
@@ -94,7 +91,7 @@ const deleteBookingById = async (req, res) => {
                 message: "You are not registered. Please create an account.",
             };
         }
-        const result = await booking_service_1.bookingService.deleteBookingById(bookingId, user);
+        const result = await bookingService.deleteBookingById(bookingId, user);
         res.status(200).json(result);
     }
     catch (error) {
@@ -104,7 +101,7 @@ const deleteBookingById = async (req, res) => {
         });
     }
 };
-exports.bookingController = {
+export const bookingController = {
     createBooking,
     getBookings,
     getbookingById,

@@ -1,23 +1,20 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.bookingService = void 0;
-const lodash_1 = require("lodash");
-const prisma_1 = require("../../lib/prisma");
-const enums_1 = require("../../utils/enums");
-const parseTime_1 = require("../../utils/parseTime");
+import { isEqual } from "lodash";
+import { prisma } from "../../lib/prisma";
+import { UserRole } from "../../utils/enums";
+import { parseTime } from "../../utils/parseTime";
 // CREATE booking (only user can create a booking)
 const createBooking = async (data, user) => {
     const studentId = user?.id;
     // console.log("bookingService: ", data);
     // 1. Role Checking (User as stuend allowed | Totor Not Allowed)
-    if (user.role === enums_1.UserRole.TUTOR) {
+    if (user.role === UserRole.TUTOR) {
         return {
             success: false,
             message: "You are not allowed to book this session.",
         };
     }
     // 2. tutor find
-    const tutor = await prisma_1.prisma.tutor.findUnique({
+    const tutor = await prisma.tutor.findUnique({
         where: {
             id: data.tutorId,
         },
@@ -49,7 +46,7 @@ const createBooking = async (data, user) => {
     let hours = 0;
     let minutes = 0;
     if (data.startTime) {
-        const parsed = (0, parseTime_1.parseTime)(data.startTime.toString());
+        const parsed = parseTime(data.startTime.toString());
         hours = parsed.hours ?? 0;
         minutes = parsed.minutes ?? 0;
     }
@@ -72,7 +69,7 @@ const createBooking = async (data, user) => {
     const endTime = new Date(finalStartTime);
     endTime.setHours(endTime.getHours() + data.duration);
     // conflickt check
-    const existingBookings = await prisma_1.prisma.bookings.findMany({
+    const existingBookings = await prisma.bookings.findMany({
         where: {
             tutorId: data.tutorId,
             status: {
@@ -93,7 +90,7 @@ const createBooking = async (data, user) => {
         };
     }
     // Create booking
-    const result = await prisma_1.prisma.bookings.create({
+    const result = await prisma.bookings.create({
         data: {
             ...data,
             studentId,
@@ -113,7 +110,7 @@ const createBooking = async (data, user) => {
 const getBookings = async (user) => {
     let bookings;
     let totalBooking = 0;
-    const tutor = await prisma_1.prisma.tutor.findUnique({
+    const tutor = await prisma.tutor.findUnique({
         where: {
             userId: user.id,
         },
@@ -125,8 +122,8 @@ const getBookings = async (user) => {
             },
         },
     });
-    if (user.role === enums_1.UserRole.ADMIN) {
-        bookings = await prisma_1.prisma.bookings.findMany({
+    if (user.role === UserRole.ADMIN) {
+        bookings = await prisma.bookings.findMany({
             include: {
                 tutor: {
                     select: {
@@ -152,28 +149,28 @@ const getBookings = async (user) => {
                 },
             },
         });
-        totalBooking = await prisma_1.prisma.bookings.count();
+        totalBooking = await prisma.bookings.count();
     }
-    else if (user.role === enums_1.UserRole.TUTOR) {
+    else if (user.role === UserRole.TUTOR) {
         if (!tutor?.id) {
             return {
                 success: false,
                 message: "Tutor not found",
             };
         }
-        bookings = await prisma_1.prisma.bookings.findMany({
+        bookings = await prisma.bookings.findMany({
             where: {
                 tutorId: tutor.id,
             },
         });
-        totalBooking = await prisma_1.prisma.bookings.count({
+        totalBooking = await prisma.bookings.count({
             where: {
                 tutorId: tutor.id,
             },
         });
     }
     else {
-        bookings = await prisma_1.prisma.bookings.findMany({
+        bookings = await prisma.bookings.findMany({
             where: {
                 studentId: user?.id,
             },
@@ -196,7 +193,7 @@ const getBookings = async (user) => {
                 },
             },
         });
-        totalBooking = await prisma_1.prisma.bookings.count({
+        totalBooking = await prisma.bookings.count({
             where: {
                 studentId: user?.id,
             },
@@ -213,7 +210,7 @@ const getBookings = async (user) => {
 };
 // GET booking by id
 const getbookingById = async (bookingId, user) => {
-    const result = await prisma_1.prisma.bookings.findUnique({
+    const result = await prisma.bookings.findUnique({
         where: {
             id: bookingId,
         },
@@ -224,7 +221,7 @@ const getbookingById = async (bookingId, user) => {
             message: "Booking not found",
         };
     }
-    if (user.id !== result?.studentId && user.role !== enums_1.UserRole.ADMIN) {
+    if (user.id !== result?.studentId && user.role !== UserRole.ADMIN) {
         return {
             success: false,
             message: "You are not authorized to view this booking",
@@ -232,7 +229,7 @@ const getbookingById = async (bookingId, user) => {
     }
     return {
         success: true,
-        message: user.role === enums_1.UserRole.ADMIN
+        message: user.role === UserRole.ADMIN
             ? "Booking fetched successfylly as a admin "
             : "Booking fetched successfylly",
         data: result,
@@ -244,7 +241,7 @@ const updateBooking = async (data, bookingId, user) => {
         // ==============================
         // 1. Fetch existing booking
         // ==============================
-        const existingBooking = await prisma_1.prisma.bookings.findUnique({
+        const existingBooking = await prisma.bookings.findUnique({
             where: { id: bookingId },
             include: { tutor: true },
         });
@@ -258,7 +255,7 @@ const updateBooking = async (data, bookingId, user) => {
         // 2. Authorization check
         // Only owner or admin can update
         // ==============================
-        if (existingBooking.studentId !== user.id && user.role !== enums_1.UserRole.ADMIN) {
+        if (existingBooking.studentId !== user.id && user.role !== UserRole.ADMIN) {
             return {
                 success: false,
                 message: "You are not authorized to update this booking",
@@ -282,7 +279,7 @@ const updateBooking = async (data, bookingId, user) => {
             "totalPrice",
             "hourlyPrice",
         ];
-        const allowedFields = user.role === enums_1.UserRole.ADMIN ? ADMIN_ALLOWED_FIELDS : USER_ALLOWED_FIELDS;
+        const allowedFields = user.role === UserRole.ADMIN ? ADMIN_ALLOWED_FIELDS : USER_ALLOWED_FIELDS;
         // ==============================
         // 4. Filter only valid + changed fields
         // - remove undefined/null
@@ -298,7 +295,7 @@ const updateBooking = async (data, bookingId, user) => {
             if (value === undefined || value === null)
                 return false;
             // remove unchanged values
-            return !(0, lodash_1.isEqual)(existingBooking[field], value);
+            return !isEqual(existingBooking[field], value);
         }));
         // if nothing changed
         if (Object.keys(filteredData).length === 0) {
@@ -313,7 +310,7 @@ const updateBooking = async (data, bookingId, user) => {
         const hourlyPrice = existingBooking.tutor?.hourlyRate;
         const duration = filteredData.duration ?? existingBooking.duration;
         const totalPrice = hourlyPrice * duration;
-        if (user.role !== enums_1.UserRole.ADMIN) {
+        if (user.role !== UserRole.ADMIN) {
             filteredData.hourlyPrice = hourlyPrice;
             filteredData.totalPrice = totalPrice;
         }
@@ -341,7 +338,7 @@ const updateBooking = async (data, bookingId, user) => {
         let minutes;
         if (filteredData.startTime) {
             // if new time provided
-            const parsed = (0, parseTime_1.parseTime)(filteredData.startTime.toString());
+            const parsed = parseTime(filteredData.startTime.toString());
             hours = parsed.hours ?? 0;
             minutes = parsed.minutes ?? 0;
         }
@@ -391,7 +388,7 @@ const updateBooking = async (data, bookingId, user) => {
         // ==============================
         // 11. Check booking conflicts
         // ==============================
-        const allExistingBookings = await prisma_1.prisma.bookings.findMany({
+        const allExistingBookings = await prisma.bookings.findMany({
             where: {
                 tutorId: existingBooking.tutorId,
                 id: { not: bookingId },
@@ -417,7 +414,7 @@ const updateBooking = async (data, bookingId, user) => {
         // ==============================
         const changedData = Object.fromEntries(Object.entries(filteredData).filter(([key, value]) => {
             const field = key;
-            return value !== undefined && !(0, lodash_1.isEqual)(existingBooking[field], value);
+            return value !== undefined && !isEqual(existingBooking[field], value);
         }));
         const changes = {};
         Object.keys(changedData).forEach((key) => {
@@ -430,7 +427,7 @@ const updateBooking = async (data, bookingId, user) => {
         // ==============================
         // 13. Update booking in database
         // ==============================
-        const updatedBooking = await prisma_1.prisma.bookings.update({
+        const updatedBooking = await prisma.bookings.update({
             where: { id: bookingId },
             data: filteredData,
             include: {
@@ -439,7 +436,7 @@ const updateBooking = async (data, bookingId, user) => {
         });
         return {
             success: true,
-            message: user.role !== enums_1.UserRole.ADMIN
+            message: user.role !== UserRole.ADMIN
                 ? "Your booking updated successfully"
                 : "User booking updated successfully",
             changes,
@@ -458,7 +455,7 @@ const updateBooking = async (data, bookingId, user) => {
 // Delete Booking by id
 const deleteBookingById = async (bookingId, user) => {
     try {
-        const existingBooking = await prisma_1.prisma.bookings.findUnique({
+        const existingBooking = await prisma.bookings.findUnique({
             where: { id: bookingId },
         });
         if (!existingBooking) {
@@ -467,20 +464,20 @@ const deleteBookingById = async (bookingId, user) => {
                 message: "No booking found",
             };
         }
-        if (existingBooking.studentId !== user.id && user.role !== enums_1.UserRole.ADMIN) {
+        if (existingBooking.studentId !== user.id && user.role !== UserRole.ADMIN) {
             return {
                 success: false,
                 message: "You are not authorized to delete this booking",
             };
         }
-        const result = await prisma_1.prisma.bookings.delete({
+        const result = await prisma.bookings.delete({
             where: {
                 id: bookingId,
             },
         });
         return {
             success: true,
-            message: user.role !== enums_1.UserRole.ADMIN
+            message: user.role !== UserRole.ADMIN
                 ? "Your Booking has been deleted successfully."
                 : "User Booking deleted successfully.",
             data: result,
@@ -493,7 +490,7 @@ const deleteBookingById = async (bookingId, user) => {
         };
     }
 };
-exports.bookingService = {
+export const bookingService = {
     createBooking,
     getBookings,
     getbookingById,

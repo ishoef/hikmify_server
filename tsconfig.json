@@ -7,7 +7,7 @@
 
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
-    "module": "CommonJS",
+    "module": "ESnext",
     // "moduleResolution": "nodenext",
     "target": "esnext",
     "types": [],
@@ -44,5 +44,5 @@
     "esModuleInterop": true
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "generated/prisma"]
+  "exclude": ["node_modules", "dist", "src/generated/prisma"]
 }

@@ -1,16 +1,10 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.tutorProfileService = void 0;
-const prisma_1 = require("../../lib/prisma");
-const enums_1 = require("../../utils/enums");
-const isEqual_1 = __importDefault(require("lodash/isEqual"));
+import { prisma } from "../../lib/prisma";
+import { UserRole } from "../../utils/enums";
+import isEqual from "lodash/isEqual";
 // CREATE Tutor Profile
 const createTutorProfile = async (data, user) => {
     // const userId = user.id;
-    const existsCategory = await prisma_1.prisma.category.findUnique({
+    const existsCategory = await prisma.category.findUnique({
         where: {
             name: data.categoryName,
         },
@@ -22,7 +16,7 @@ const createTutorProfile = async (data, user) => {
         };
     }
     // Duplicate TutorPrifle Check
-    const existTutorProfile = await prisma_1.prisma.tutor.findUnique({
+    const existTutorProfile = await prisma.tutor.findUnique({
         where: {
             userId: user.id,
         },
@@ -33,7 +27,7 @@ const createTutorProfile = async (data, user) => {
             message: "You have already created a tutor profile",
         };
     }
-    const createdTutorProfile = await prisma_1.prisma.$transaction(async (tx) => {
+    const createdTutorProfile = await prisma.$transaction(async (tx) => {
         const result = await tx.tutor.create({
             data: {
                 ...data,
@@ -51,10 +45,10 @@ const createTutorProfile = async (data, user) => {
                 },
             },
         });
-        if (user.role === enums_1.UserRole.USER) {
+        if (user.role === UserRole.USER) {
             await tx.user.update({
                 where: { id: user.id },
-                data: { role: enums_1.UserRole.TUTOR },
+                data: { role: UserRole.TUTOR },
             });
         }
         return result;
@@ -83,7 +77,7 @@ const createTutorProfile = async (data, user) => {
 };
 // GET All Tutor Profiles for admin
 const getAllTutorProfiles = async () => {
-    const data = await prisma_1.prisma.tutor.findMany({
+    const data = await prisma.tutor.findMany({
         include: {
             user: {
                 select: {
@@ -96,8 +90,8 @@ const getAllTutorProfiles = async () => {
             },
         },
     });
-    const totalUser = await prisma_1.prisma.user.count();
-    const tutorProfiles = await prisma_1.prisma.tutor.count();
+    const totalUser = await prisma.user.count();
+    const tutorProfiles = await prisma.tutor.count();
     return {
         success: true,
         totalUser,
@@ -107,7 +101,7 @@ const getAllTutorProfiles = async () => {
 };
 // GET own tutor profile
 const getOwnTutorProfile = async (userId) => {
-    const tutorProfile = await prisma_1.prisma.tutor.findUnique({
+    const tutorProfile = await prisma.tutor.findUnique({
         where: {
             userId,
         },
@@ -136,7 +130,7 @@ const getOwnTutorProfile = async (userId) => {
 };
 // get single profile by id
 const getSingleTutorProfile = async (profileId) => {
-    const result = await prisma_1.prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx) => {
         await tx.tutor.update({
             where: {
                 id: profileId,
@@ -178,7 +172,7 @@ const getSingleTutorProfile = async (profileId) => {
 const updateTutorProfile = async (profileId, data, user) => {
     try {
         // 1. Get old data
-        const oldProfileData = await prisma_1.prisma.tutor.findUnique({
+        const oldProfileData = await prisma.tutor.findUnique({
             where: { id: profileId },
         });
         if (!oldProfileData) {
@@ -188,7 +182,7 @@ const updateTutorProfile = async (profileId, data, user) => {
             };
         }
         // 2. Authorization check
-        if (oldProfileData.userId !== user?.id && user?.role !== enums_1.UserRole.ADMIN) {
+        if (oldProfileData.userId !== user?.id && user?.role !== UserRole.ADMIN) {
             return {
                 success: false,
                 message: "You are not allowed to update this profile.",
@@ -197,7 +191,7 @@ const updateTutorProfile = async (profileId, data, user) => {
         // 3. Filter ONLY real changes (remove undefined + same values)
         const filteredData = Object.fromEntries(Object.entries(data).filter(([key, value]) => {
             const field = key;
-            return value !== undefined && !(0, isEqual_1.default)(oldProfileData[field], value);
+            return value !== undefined && !isEqual(oldProfileData[field], value);
         }));
         // 4. Empty check after filtering
         if (Object.keys(filteredData).length === 0) {
@@ -217,7 +211,7 @@ const updateTutorProfile = async (profileId, data, user) => {
             };
         });
         // 6. Update DB
-        const updatedProfile = await prisma_1.prisma.tutor.update({
+        const updatedProfile = await prisma.tutor.update({
             where: { id: profileId },
             data: filteredData,
         });
@@ -239,7 +233,7 @@ const updateTutorProfile = async (profileId, data, user) => {
 // DELETE profile
 const deleteTutorProfile = async (user, profileId) => {
     const userId = user.id;
-    const existProfile = await prisma_1.prisma.tutor.findUnique({
+    const existProfile = await prisma.tutor.findUnique({
         where: {
             id: profileId,
         },
@@ -250,37 +244,37 @@ const deleteTutorProfile = async (user, profileId) => {
             message: "No tutor profile found",
         };
     }
-    if (existProfile.userId !== userId && user.role !== enums_1.UserRole.ADMIN) {
+    if (existProfile.userId !== userId && user.role !== UserRole.ADMIN) {
         return {
             success: false,
             message: "You are not authorized to delete this profile",
         };
     }
-    const deleteResult = await prisma_1.prisma.tutor.delete({
+    const deleteResult = await prisma.tutor.delete({
         where: {
             id: profileId,
         },
     });
     const targetUserId = existProfile.userId;
     if (deleteResult) {
-        await prisma_1.prisma.user.update({
+        await prisma.user.update({
             where: {
                 id: targetUserId,
             },
             data: {
-                role: enums_1.UserRole.USER,
+                role: UserRole.USER,
             },
         });
     }
     return {
         success: true,
-        message: user.role !== enums_1.UserRole.ADMIN
+        message: user.role !== UserRole.ADMIN
             ? "Your profile has been deleted successfully."
             : "Tutor profile deleted successfully.",
         data: deleteResult,
     };
 };
-exports.tutorProfileService = {
+export const tutorProfileService = {
     createTutorProfile,
     getAllTutorProfiles,
     getOwnTutorProfile,

@@ -6,22 +6,7 @@ export declare const bookingService: {
         data?: never;
     } | {
         success: boolean;
-        data: {
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            categoryId: string;
-            status: import("../../generated/prisma/enums").BookingStatus;
-            duration: number;
-            bookingDate: Date;
-            startTime: Date;
-            notes: string | null;
-            hourlyPrice: number;
-            totalPrice: number;
-            meetingLink: string | null;
-            studentId: string;
-            tutorId: string;
-        };
+        data: any;
         message: string;
     }>;
     getBookings: (user: User) => Promise<{
@@ -33,22 +18,7 @@ export declare const bookingService: {
         success: boolean;
         totalBooking: number;
         message: string;
-        data: {
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            categoryId: string;
-            status: import("../../generated/prisma/enums").BookingStatus;
-            duration: number;
-            bookingDate: Date;
-            startTime: Date;
-            notes: string | null;
-            hourlyPrice: number;
-            totalPrice: number;
-            meetingLink: string | null;
-            studentId: string;
-            tutorId: string;
-        }[];
+        data: any;
     }>;
     getbookingById: (bookingId: string, user: User) => Promise<{
         success: boolean;
@@ -57,22 +27,7 @@ export declare const bookingService: {
     } | {
         success: boolean;
         message: string;
-        data: {
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            categoryId: string;
-            status: import("../../generated/prisma/enums").BookingStatus;
-            duration: number;
-            bookingDate: Date;
-            startTime: Date;
-            notes: string | null;
-            hourlyPrice: number;
-            totalPrice: number;
-            meetingLink: string | null;
-            studentId: string;
-            tutorId: string;
-        };
+        data: any;
     }>;
     deleteBookingById: (bookingId: string, user: User) => Promise<{
         success: boolean;
@@ -81,22 +36,7 @@ export declare const bookingService: {
     } | {
         success: boolean;
         message: string;
-        data: {
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            categoryId: string;
-            status: import("../../generated/prisma/enums").BookingStatus;
-            duration: number;
-            bookingDate: Date;
-            startTime: Date;
-            notes: string | null;
-            hourlyPrice: number;
-            totalPrice: number;
-            meetingLink: string | null;
-            studentId: string;
-            tutorId: string;
-        };
+        data: any;
     }>;
     updateBooking: (data: BookingData, bookingId: string, user: User) => Promise<{
         success: boolean;
@@ -111,35 +51,7 @@ export declare const bookingService: {
             old: unknown;
             new: unknown;
         }>;
-        data: {
-            student: {
-                id: string;
-                name: string;
-                createdAt: Date;
-                updatedAt: Date;
-                email: string;
-                emailVerified: boolean;
-                image: string | null;
-                role: string | null;
-                status: string | null;
-                phone: string | null;
-            };
-        } & {
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            categoryId: string;
-            status: import("../../generated/prisma/enums").BookingStatus;
-            duration: number;
-            bookingDate: Date;
-            startTime: Date;
-            notes: string | null;
-            hourlyPrice: number;
-            totalPrice: number;
-            meetingLink: string | null;
-            studentId: string;
-            tutorId: string;
-        };
+        data: any;
         error?: never;
     } | {
         success: boolean;

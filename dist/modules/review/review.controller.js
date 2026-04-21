@@ -1,7 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.reviewController = void 0;
-const review_service_1 = require("./review.service");
+import { reviewService } from "./review.service";
 const createReview = async (req, res) => {
     try {
         const user = req.user;
@@ -11,7 +8,7 @@ const createReview = async (req, res) => {
                 message: "You are not a user, please create an account",
             };
         }
-        const result = await review_service_1.reviewService.createReview(req.body, user);
+        const result = await reviewService.createReview(req.body, user);
         res.status(201).json(result);
     }
     catch (error) {
@@ -31,7 +28,7 @@ const allReviews = async (req, res) => {
                 message: "You are not a user, please create an account",
             };
         }
-        const result = await review_service_1.reviewService.allReviews(user);
+        const result = await reviewService.allReviews(user);
         res.status(200).json(result);
     }
     catch (error) {
@@ -51,7 +48,7 @@ const getMyReviews = async (req, res) => {
                 message: "You are not a user, please create an account",
             };
         }
-        const result = await review_service_1.reviewService.getMyReviews(userId);
+        const result = await reviewService.getMyReviews(userId);
         res.status(200).json(result);
     }
     catch (error) {
@@ -72,7 +69,7 @@ const updateReview = async (req, res) => {
                 message: "You are not a user, please create an account",
             };
         }
-        const result = await review_service_1.reviewService.updateReview(reviewId, user, req.body);
+        const result = await reviewService.updateReview(reviewId, user, req.body);
         res.status(200).json(result);
     }
     catch (error) {
@@ -94,7 +91,7 @@ const deleteReview = async (req, res) => {
                 message: "You are not a user, please create an account",
             };
         }
-        const result = await review_service_1.reviewService.deleteReview(reviewId, user);
+        const result = await reviewService.deleteReview(reviewId, user);
         res.status(200).json(result);
     }
     catch (error) {
@@ -104,7 +101,7 @@ const deleteReview = async (req, res) => {
         });
     }
 };
-exports.reviewController = {
+export const reviewController = {
     createReview,
     allReviews,
     getMyReviews,

@@ -1,10 +1,7 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.reviewService = void 0;
-const lodash_1 = require("lodash");
-const client_1 = require("../../generated/prisma/client");
-const prisma_1 = require("../../lib/prisma");
-const enums_1 = require("../../utils/enums");
+import { isEqual } from "lodash";
+import { BookingStatus } from "../../generated/prisma/client";
+import { prisma } from "../../lib/prisma";
+import { UserRole } from "../../utils/enums";
 // CREATE review
 const createReview = async (data, user) => {
     try {
@@ -18,7 +15,7 @@ const createReview = async (data, user) => {
             };
         }
         // 2. Check if booking exists
-        const booking = await prisma_1.prisma.bookings.findUnique({
+        const booking = await prisma.bookings.findUnique({
             where: { id: bookingId },
         });
         if (!booking) {
@@ -35,14 +32,14 @@ const createReview = async (data, user) => {
             };
         }
         // 4. Allow review only if booking is completed
-        if (booking.status !== client_1.BookingStatus.COMPLETED) {
+        if (booking.status !== BookingStatus.COMPLETED) {
             return {
                 success: false,
                 message: "Only completed bookings can be reviewed",
             };
         }
         // 5. Prevent duplicate review for the same booking
-        const existingReview = await prisma_1.prisma.review.findFirst({
+        const existingReview = await prisma.review.findFirst({
             where: { bookingId },
         });
         if (existingReview) {
@@ -52,7 +49,7 @@ const createReview = async (data, user) => {
             };
         }
         // 6. Check if tutor exists
-        const tutor = await prisma_1.prisma.tutor.findUnique({ where: { id: tutorId } });
+        const tutor = await prisma.tutor.findUnique({ where: { id: tutorId } });
         if (!tutor) {
             return {
                 success: false,
@@ -60,7 +57,7 @@ const createReview = async (data, user) => {
             };
         }
         // 7. Run transaction to keep data consistent
-        const finalResult = await prisma_1.prisma.$transaction(async (tx) => {
+        const finalResult = await prisma.$transaction(async (tx) => {
             // Fetch current tutor rating data
             const tutorData = await tx.tutor.findUnique({
                 where: { id: tutorId },
@@ -112,18 +109,18 @@ const createReview = async (data, user) => {
 };
 // GEt All Reviews for admin
 const allReviews = async (user) => {
-    if (user.role !== enums_1.UserRole.ADMIN) {
+    if (user.role !== UserRole.ADMIN) {
         return {
             success: false,
             message: "You are not authorized to access this resource",
         };
     }
     const [reviews, totalReview, totalUser, totalTutor, totalBooking] = await Promise.all([
-        prisma_1.prisma.review.findMany(),
-        prisma_1.prisma.review.count(),
-        prisma_1.prisma.user.count(),
-        prisma_1.prisma.tutor.count(),
-        prisma_1.prisma.bookings.count(),
+        prisma.review.findMany(),
+        prisma.review.count(),
+        prisma.user.count(),
+        prisma.tutor.count(),
+        prisma.bookings.count(),
     ]);
     return {
         success: true,
@@ -137,14 +134,14 @@ const allReviews = async (user) => {
 const getMyReviews = async (userId) => {
     try {
         const [reviews, totalBooking, totalReview] = await Promise.all([
-            prisma_1.prisma.review.findMany({
+            prisma.review.findMany({
                 where: { studentId: userId },
                 include: { tutor: true, booking: true },
             }),
-            prisma_1.prisma.bookings.count({
+            prisma.bookings.count({
                 where: { studentId: userId },
             }),
-            prisma_1.prisma.review.count({
+            prisma.review.count({
                 where: { studentId: userId },
             }),
         ]);
@@ -176,7 +173,7 @@ const updateReview = async (reviewId, user, data) => {
             };
         }
         // get old review data
-        const existingReview = await prisma_1.prisma.review.findUnique({
+        const existingReview = await prisma.review.findUnique({
             where: {
                 id: reviewId,
             },
@@ -189,7 +186,7 @@ const updateReview = async (reviewId, user, data) => {
             };
         }
         // authentication check
-        if (user.id !== existingReview.studentId && user.role !== enums_1.UserRole.ADMIN) {
+        if (user.id !== existingReview.studentId && user.role !== UserRole.ADMIN) {
             return {
                 success: false,
                 message: "You are not authorized to update this review",
@@ -198,7 +195,7 @@ const updateReview = async (reviewId, user, data) => {
         // filter ONLY real changes
         const filteredData = Object.fromEntries(Object.entries(data).filter(([key, value]) => {
             const field = key;
-            return value !== undefined && !(0, lodash_1.isEqual)(existingReview[field], value);
+            return value !== undefined && !isEqual(existingReview[field], value);
         }));
         // Empty check after filtering
         if (Object.keys(filteredData).length === 0) {
@@ -218,7 +215,7 @@ const updateReview = async (reviewId, user, data) => {
             };
         });
         // finally update review and update tutor profile data
-        const finalResult = await prisma_1.prisma.$transaction(async (tx) => {
+        const finalResult = await prisma.$transaction(async (tx) => {
             const tutor = await tx.tutor.findUnique({
                 where: { id: existingReview.tutorId },
                 select: {
@@ -280,7 +277,7 @@ const updateReview = async (reviewId, user, data) => {
 const deleteReview = async (reviewId, user) => {
     try {
         // delete review and update tutor data
-        const result = await prisma_1.prisma.$transaction(async (tx) => {
+        const result = await prisma.$transaction(async (tx) => {
             const existingReview = await tx.review.findUnique({
                 where: {
                     id: reviewId,
@@ -299,7 +296,7 @@ const deleteReview = async (reviewId, user) => {
                 throw new Error("Review not found");
             }
             if (existingReview.studentId !== user.id &&
-                user.role !== enums_1.UserRole.ADMIN) {
+                user.role !== UserRole.ADMIN) {
                 throw new Error("Not authorized");
             }
             const oldAverage = existingReview?.tutor.averageRating || 0;
@@ -342,7 +339,7 @@ const deleteReview = async (reviewId, user) => {
         };
     }
 };
-exports.reviewService = {
+export const reviewService = {
     createReview,
     allReviews,
     getMyReviews,

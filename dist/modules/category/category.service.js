@@ -1,11 +1,8 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.categoryService = void 0;
-const prisma_1 = require("../../lib/prisma");
+import { prisma } from "../../lib/prisma";
 const createCategory = async (data) => {
     const normalizedName = data.name.trim().toLowerCase();
     // optional pre-check (UX improvement only)
-    const exists = await prisma_1.prisma.category.findFirst({
+    const exists = await prisma.category.findFirst({
         where: {
             name: {
                 equals: normalizedName,
@@ -17,7 +14,7 @@ const createCategory = async (data) => {
         throw new Error(`'${data.name}' category already exists`);
     }
     // Creating the category
-    const result = await prisma_1.prisma.category.create({
+    const result = await prisma.category.create({
         data: {
             ...data,
             name: normalizedName,
@@ -29,9 +26,9 @@ const createCategory = async (data) => {
 // ALL category
 const getAllCategory = async () => {
     // GET all categories
-    const result = await prisma_1.prisma.category.findMany();
+    const result = await prisma.category.findMany();
     // Total Data Count
-    const totalData = await prisma_1.prisma.category.count();
+    const totalData = await prisma.category.count();
     return {
         success: true,
         totalData: totalData,
@@ -43,7 +40,7 @@ const getAllCategory = async () => {
 };
 // update category
 const updateCategory = async (categoryId, data) => {
-    const existsCategory = await prisma_1.prisma.category.findUnique({
+    const existsCategory = await prisma.category.findUnique({
         where: {
             id: categoryId,
         },
@@ -51,7 +48,7 @@ const updateCategory = async (categoryId, data) => {
     if (!existsCategory) {
         throw new Error("Ai category nai");
     }
-    const result = await prisma_1.prisma.category.update({
+    const result = await prisma.category.update({
         where: {
             id: categoryId,
         },
@@ -65,7 +62,7 @@ const updateCategory = async (categoryId, data) => {
 };
 // DELETE Category
 const deleteCategory = async (categoryId) => {
-    const result = await prisma_1.prisma.category.delete({
+    const result = await prisma.category.delete({
         where: {
             id: categoryId,
         },
@@ -76,7 +73,7 @@ const deleteCategory = async (categoryId) => {
         message: "this category deleted successfully",
     };
 };
-exports.categoryService = {
+export const categoryService = {
     createCategory,
     getAllCategory,
     updateCategory,

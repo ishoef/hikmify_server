@@ -22,8 +22,11 @@ app.use(express.json());
 // Auth Route
 app.all("/api/auth/*splate", toNodeHandler(auth));
 
-app.get("/", (req, res) => {
-  res.send("The server of Hikmify is running");
+app.get("/", async (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "The server of Hikmify is running",
+  });
 });
 
 // All Routes

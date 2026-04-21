@@ -6,64 +6,14 @@ export declare const tutorProfileService: {
         data?: never;
     } | {
         success: boolean;
-        data: {
-            user: {
-                name: string;
-                email: string;
-                image: string | null;
-                role: string | null;
-                phone: string | null;
-            };
-        } & {
-            id: string;
-            isActive: import("../../generated/prisma/enums").TutorActivity;
-            createdAt: Date;
-            updatedAt: Date;
-            userId: string;
-            bio: string | null;
-            subjects: string[];
-            experience: string | null;
-            qualification: string | null;
-            hourlyRate: number | null;
-            availability: string[];
-            averageRating: number;
-            totalreviews: number;
-            profileViews: number;
-            isApproved: import("../../generated/prisma/enums").TutorStatus;
-            categoryName: string;
-        };
+        data: any;
         message?: never;
     }>;
     getAllTutorProfiles: () => Promise<{
         success: boolean;
-        totalUser: number;
-        tutorProfiles: number;
-        data: ({
-            user: {
-                name: string;
-                email: string;
-                image: string | null;
-                role: string | null;
-                phone: string | null;
-            };
-        } & {
-            id: string;
-            isActive: import("../../generated/prisma/enums").TutorActivity;
-            createdAt: Date;
-            updatedAt: Date;
-            userId: string;
-            bio: string | null;
-            subjects: string[];
-            experience: string | null;
-            qualification: string | null;
-            hourlyRate: number | null;
-            availability: string[];
-            averageRating: number;
-            totalreviews: number;
-            profileViews: number;
-            isApproved: import("../../generated/prisma/enums").TutorStatus;
-            categoryName: string;
-        })[];
+        totalUser: any;
+        tutorProfiles: any;
+        data: any;
     }>;
     getOwnTutorProfile: (userId: string) => Promise<{
         success: boolean;
@@ -71,32 +21,7 @@ export declare const tutorProfileService: {
         data?: never;
     } | {
         success: boolean;
-        data: {
-            user: {
-                name: string;
-                email: string;
-                image: string | null;
-                role: string | null;
-                phone: string | null;
-            };
-        } & {
-            id: string;
-            isActive: import("../../generated/prisma/enums").TutorActivity;
-            createdAt: Date;
-            updatedAt: Date;
-            userId: string;
-            bio: string | null;
-            subjects: string[];
-            experience: string | null;
-            qualification: string | null;
-            hourlyRate: number | null;
-            availability: string[];
-            averageRating: number;
-            totalreviews: number;
-            profileViews: number;
-            isApproved: import("../../generated/prisma/enums").TutorStatus;
-            categoryName: string;
-        };
+        data: any;
         message?: never;
     }>;
     deleteTutorProfile: (user: User, profileId: string) => Promise<{
@@ -106,24 +31,7 @@ export declare const tutorProfileService: {
     } | {
         success: boolean;
         message: string;
-        data: {
-            id: string;
-            isActive: import("../../generated/prisma/enums").TutorActivity;
-            createdAt: Date;
-            updatedAt: Date;
-            userId: string;
-            bio: string | null;
-            subjects: string[];
-            experience: string | null;
-            qualification: string | null;
-            hourlyRate: number | null;
-            availability: string[];
-            averageRating: number;
-            totalreviews: number;
-            profileViews: number;
-            isApproved: import("../../generated/prisma/enums").TutorStatus;
-            categoryName: string;
-        };
+        data: any;
     }>;
     updateTutorProfile: (profileId: string, data: Partial<TutorProfile>, user: User) => Promise<{
         success: boolean;
@@ -133,46 +41,12 @@ export declare const tutorProfileService: {
     } | {
         success: boolean;
         message: string;
-        data: {
-            id: string;
-            isActive: import("../../generated/prisma/enums").TutorActivity;
-            createdAt: Date;
-            updatedAt: Date;
-            userId: string;
-            bio: string | null;
-            subjects: string[];
-            experience: string | null;
-            qualification: string | null;
-            hourlyRate: number | null;
-            availability: string[];
-            averageRating: number;
-            totalreviews: number;
-            profileViews: number;
-            isApproved: import("../../generated/prisma/enums").TutorStatus;
-            categoryName: string;
-        };
+        data: any;
         changes?: never;
     } | {
         success: boolean;
         message: string;
-        data: {
-            id: string;
-            isActive: import("../../generated/prisma/enums").TutorActivity;
-            createdAt: Date;
-            updatedAt: Date;
-            userId: string;
-            bio: string | null;
-            subjects: string[];
-            experience: string | null;
-            qualification: string | null;
-            hourlyRate: number | null;
-            availability: string[];
-            averageRating: number;
-            totalreviews: number;
-            profileViews: number;
-            isApproved: import("../../generated/prisma/enums").TutorStatus;
-            categoryName: string;
-        };
+        data: any;
         changes: Record<string, {
             old: unknown;
             new: unknown;
@@ -181,35 +55,7 @@ export declare const tutorProfileService: {
     getSingleTutorProfile: (profileId: string) => Promise<{
         success: boolean;
         message: string;
-        data: ({
-            _count: {
-                bookings: number;
-            };
-            user: {
-                name: string;
-                email: string;
-                role: string | null;
-                status: string | null;
-                phone: string | null;
-            };
-        } & {
-            id: string;
-            isActive: import("../../generated/prisma/enums").TutorActivity;
-            createdAt: Date;
-            updatedAt: Date;
-            userId: string;
-            bio: string | null;
-            subjects: string[];
-            experience: string | null;
-            qualification: string | null;
-            hourlyRate: number | null;
-            availability: string[];
-            averageRating: number;
-            totalreviews: number;
-            profileViews: number;
-            isApproved: import("../../generated/prisma/enums").TutorStatus;
-            categoryName: string;
-        }) | null;
+        data: any;
     }>;
 };
 //# sourceMappingURL=tutorProfile.service.d.ts.map

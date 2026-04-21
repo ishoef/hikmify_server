@@ -6,29 +6,11 @@ export interface CategoryData {
     isActive?: boolean;
 }
 export declare const categoryService: {
-    createCategory: (data: CategoryData) => Promise<{
-        id: string;
-        name: string;
-        description: string | null;
-        tags: string[];
-        icon: string | null;
-        isActive: boolean;
-        createdAt: Date;
-        updatedAt: Date;
-    }>;
+    createCategory: (data: CategoryData) => Promise<any>;
     getAllCategory: () => Promise<{
         success: boolean;
-        totalData: number;
-        data: {
-            id: string;
-            name: string;
-            description: string | null;
-            tags: string[];
-            icon: string | null;
-            isActive: boolean;
-            createdAt: Date;
-            updatedAt: Date;
-        }[];
+        totalData: any;
+        data: any;
         message: string;
     }>;
     updateCategory: (categoryId: string, data: {
@@ -37,29 +19,11 @@ export declare const categoryService: {
         icon?: string;
     }) => Promise<{
         success: boolean;
-        data: {
-            id: string;
-            name: string;
-            description: string | null;
-            tags: string[];
-            icon: string | null;
-            isActive: boolean;
-            createdAt: Date;
-            updatedAt: Date;
-        };
+        data: any;
     }>;
     deleteCategory: (categoryId: string) => Promise<{
         success: boolean;
-        data: {
-            id: string;
-            name: string;
-            description: string | null;
-            tags: string[];
-            icon: string | null;
-            isActive: boolean;
-            createdAt: Date;
-            updatedAt: Date;
-        };
+        data: any;
         message: string;
     }>;
 };

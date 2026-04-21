@@ -1,11 +1,8 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.categoryController = void 0;
-const category_service_1 = require("./category.service");
+import { categoryService } from "./category.service";
 // POST Category
 const createCategory = async (req, res) => {
     try {
-        const result = await category_service_1.categoryService.createCategory(req.body);
+        const result = await categoryService.createCategory(req.body);
         res.status(201).json(result);
     }
     catch (error) {
@@ -21,7 +18,7 @@ const getAllCategory = async (req, res) => {
     try {
         const user = req.user;
         console.log("From categoryController:", user);
-        const result = await category_service_1.categoryService.getAllCategory();
+        const result = await categoryService.getAllCategory();
         res.status(200).json(result);
     }
     catch (error) {
@@ -37,7 +34,7 @@ const updateCategory = async (req, res) => {
         const { categoryId } = req.params;
         console.log(categoryId);
         console.log(req.body);
-        const result = await category_service_1.categoryService.updateCategory(categoryId, req.body);
+        const result = await categoryService.updateCategory(categoryId, req.body);
         res.status(200).json(result);
     }
     catch (error) {
@@ -51,7 +48,7 @@ const updateCategory = async (req, res) => {
 const deleteCategory = async (req, res) => {
     try {
         const { categoryId } = req.params;
-        const result = await category_service_1.categoryService.deleteCategory(categoryId);
+        const result = await categoryService.deleteCategory(categoryId);
         res.status(200).json(result);
     }
     catch (error) {
@@ -61,7 +58,7 @@ const deleteCategory = async (req, res) => {
         });
     }
 };
-exports.categoryController = {
+export const categoryController = {
     createCategory,
     getAllCategory,
     updateCategory,

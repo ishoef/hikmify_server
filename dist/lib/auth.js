@@ -1,13 +1,10 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.auth = void 0;
-const better_auth_1 = require("better-auth");
-const prisma_1 = require("better-auth/adapters/prisma");
-const prisma_2 = require("./prisma");
-const enums_1 = require("../utils/enums");
+import { betterAuth } from "better-auth";
+import { prismaAdapter } from "better-auth/adapters/prisma";
+import { prisma } from "./prisma";
+import { UserRole, UserStatus } from "../utils/enums";
 // If your Prisma file is located elsewhere, you can change the path
-exports.auth = (0, better_auth_1.betterAuth)({
-    database: (0, prisma_1.prismaAdapter)(prisma_2.prisma, {
+export const auth = betterAuth({
+    database: prismaAdapter(prisma, {
         provider: "sqlite", // or "mysql", "postgresql", ...etc
     }),
     // Additional Information
@@ -15,12 +12,12 @@ exports.auth = (0, better_auth_1.betterAuth)({
         additionalFields: {
             role: {
                 type: "string",
-                defaultValue: enums_1.UserRole.USER,
+                defaultValue: UserRole.USER,
                 required: false,
             },
             status: {
                 type: "string",
-                defaultValue: enums_1.UserStatus.ACTIVE,
+                defaultValue: UserStatus.ACTIVE,
                 required: false,
             },
             phone: {

@@ -1,32 +1,27 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const express_1 = __importDefault(require("express"));
-const cors_1 = __importDefault(require("cors"));
-const node_1 = require("better-auth/node");
-const category_router_1 = require("./modules/category/category.router");
-const auth_1 = require("./lib/auth");
-const tutorProfile_router_1 = require("./modules/tutorProfile/tutorProfile.router");
-const booking_router_1 = require("./modules/booking/booking.router");
-const review_router_1 = require("./modules/review/review.router");
-const app = (0, express_1.default)();
-app.use((0, cors_1.default)({
+import express from "express";
+import cors from "cors";
+import { toNodeHandler } from "better-auth/node";
+import { categoryRouter } from "./modules/category/category.router";
+import { auth } from "./lib/auth";
+import { tutorProfileRouter } from "./modules/tutorProfile/tutorProfile.router";
+import { bookingRouter } from "./modules/booking/booking.router";
+import { reviewRouter } from "./modules/review/review.router";
+const app = express();
+app.use(cors({
     origin: process.env.APP_URL || "http://localhost:3000",
     credentials: true,
 }));
 // Json Middleware
-app.use(express_1.default.json());
+app.use(express.json());
 // Auth Route
-app.all("/api/auth/*splate", (0, node_1.toNodeHandler)(auth_1.auth));
+app.all("/api/auth/*splate", toNodeHandler(auth));
 app.get("/", (req, res) => {
     res.send("The server of Hikmify is running");
 });
 // All Routes
-app.use("/category", category_router_1.categoryRouter);
-app.use("/tutors", tutorProfile_router_1.tutorProfileRouter);
-app.use("/bookings", booking_router_1.bookingRouter);
-app.use("/reviews", review_router_1.reviewRouter);
-exports.default = app;
+app.use("/category", categoryRouter);
+app.use("/tutors", tutorProfileRouter);
+app.use("/bookings", bookingRouter);
+app.use("/reviews", reviewRouter);
+export default app;
 //# sourceMappingURL=app.js.map

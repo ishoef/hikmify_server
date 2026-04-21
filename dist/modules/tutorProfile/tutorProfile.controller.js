@@ -1,7 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.tutorProfileController = void 0;
-const tutorProfile_service_1 = require("./tutorProfile.service");
+import { tutorProfileService } from "./tutorProfile.service";
 // CREATE tutor profile
 const createTutorProfile = async (req, res) => {
     try {
@@ -12,7 +9,7 @@ const createTutorProfile = async (req, res) => {
                 message: "You are not a user, please create an account",
             };
         }
-        const result = await tutorProfile_service_1.tutorProfileService.createTutorProfile(req.body, user);
+        const result = await tutorProfileService.createTutorProfile(req.body, user);
         res.status(201).json(result);
     }
     catch (error) {
@@ -25,7 +22,7 @@ const createTutorProfile = async (req, res) => {
 // GET Tutor profiles
 const getAllTutorProfiles = async (req, res) => {
     try {
-        const result = await tutorProfile_service_1.tutorProfileService.getAllTutorProfiles();
+        const result = await tutorProfileService.getAllTutorProfiles();
         res.status(200).json(result);
     }
     catch (error) {
@@ -44,7 +41,7 @@ const getOwnTutorProfile = async (req, res) => {
                 message: "Your don't have any profile, please create a profile",
             };
         }
-        const result = await tutorProfile_service_1.tutorProfileService.getOwnTutorProfile(userId);
+        const result = await tutorProfileService.getOwnTutorProfile(userId);
         console.log(result);
         res.status(200).json(result);
     }
@@ -65,7 +62,7 @@ const getSingleTutorProfile = async (req, res) => {
                 message: "Profile Id is missing",
             };
         }
-        const result = await tutorProfile_service_1.tutorProfileService.getSingleTutorProfile(profileId);
+        const result = await tutorProfileService.getSingleTutorProfile(profileId);
         res.status(200).json(result);
     }
     catch (error) {
@@ -86,7 +83,7 @@ const updateTutorProfile = async (req, res) => {
                 message: "You are not a user, please create an account",
             };
         }
-        const result = await tutorProfile_service_1.tutorProfileService.updateTutorProfile(profileId, req.body, user);
+        const result = await tutorProfileService.updateTutorProfile(profileId, req.body, user);
         console.log("Update tutorProfile: ", req.body);
         res.status(200).json(result);
     }
@@ -108,7 +105,7 @@ const deleteTutorProfile = async (req, res) => {
                 message: "User not available, please create your account",
             };
         }
-        const result = await tutorProfile_service_1.tutorProfileService.deleteTutorProfile(user, profileId);
+        const result = await tutorProfileService.deleteTutorProfile(user, profileId);
         res.status(200).json(result);
     }
     catch (error) {
@@ -118,7 +115,7 @@ const deleteTutorProfile = async (req, res) => {
         });
     }
 };
-exports.tutorProfileController = {
+export const tutorProfileController = {
     createTutorProfile,
     getAllTutorProfiles,
     getOwnTutorProfile,
