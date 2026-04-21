@@ -1,6 +1,7 @@
 {
   "name": "hikmify",
   "version": "1.0.0",
+  "type": "commonjs",
   "description": "",
   "main": "server.ts",
   "scripts": {
