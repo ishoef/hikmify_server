@@ -1,4 +1,4 @@
-import { isEqual } from "lodash";
+import isEqual from "lodash.isequal";
 import { prisma } from "../../lib/prisma";
 import { BookingData, User } from "../../types/types";
 import { UserRole } from "../../utils/enums";

@@ -1,7 +1,7 @@
-import { isEqual } from "lodash";
-import { BookingStatus } from "../../generated/prisma/client";
+import isEqual from "lodash.isequal";
 import { prisma } from "../../lib/prisma";
 import { UserRole } from "../../utils/enums";
+import { BookingStatus } from "../../generated/client";
 // CREATE review
 const createReview = async (data, user) => {
     try {

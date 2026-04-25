@@ -9,7 +9,7 @@ const authMiddleware = (...roles) => {
                 headers: req.headers,
             });
             // Session Check
-            if (!session) {
+            if (!session || !session.user) {
                 return res.status(401).json({
                     success: false,
                     message: "You are not authorized!",
@@ -33,7 +33,7 @@ const authMiddleware = (...roles) => {
                     message: "Forbidden! You don't have permission to access this",
                 });
             }
-            next();
+            return next();
         }
         catch (error) {
             next(error);

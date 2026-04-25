@@ -26,7 +26,7 @@ const authMiddleware = (...roles: UserRole[]) => {
       });
 
       // Session Check
-      if (!session) {
+      if (!session || !session.user) {
         return res.status(401).json({
           success: false,
           message: "You are not authorized!",
@@ -55,7 +55,7 @@ const authMiddleware = (...roles: UserRole[]) => {
         });
       }
 
-      next();
+      return next();
     } catch (error) {
       next(error);
     }
