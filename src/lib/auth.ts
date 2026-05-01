@@ -29,11 +29,20 @@ export const auth = betterAuth({
       },
     },
   },
-  
+
   emailAndPassword: {
     enabled: true,
     autoSignIn: true,
     requireEmailVerification: false,
+  },
+
+  socialProviders: {
+    google: {
+      prompt: "select_account consent",
+      accessType: "offline",
+      clientId: process.env.GOOGLE_CLIENT_ID as string,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+    },
   },
 
   trustedOrigins: ["http://localhost:3000", "http://localhost:3001"],

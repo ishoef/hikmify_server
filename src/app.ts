@@ -20,7 +20,7 @@ app.use(
 app.use(express.json());
 
 // Auth Route
-app.all("/api/auth/*splate", toNodeHandler(auth));
+app.all("/api/auth/*", toNodeHandler(auth));
 
 app.get("/", async (req, res) => {
   res.status(200).json({
