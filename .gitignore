@@ -1,7 +1,8 @@
 node_modules
+
 # Keep environment variables out of version control
 .env
-
+# dist/  # Do NOT ignore dist — Vercel needs the built files
 /generated/prisma
 
 .vercel

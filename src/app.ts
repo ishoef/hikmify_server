@@ -1,11 +1,11 @@
 import express, { Application } from "express";
 import cors from "cors";
 import { toNodeHandler } from "better-auth/node";
-import { categoryRouter } from "./modules/category/category.router";
-import { auth } from "./lib/auth";
-import { tutorProfileRouter } from "./modules/tutorProfile/tutorProfile.router";
-import { bookingRouter } from "./modules/booking/booking.router";
-import { reviewRouter } from "./modules/review/review.router";
+import { categoryRouter } from "./modules/category/category.router.js";
+import { auth } from "./lib/auth.js";
+import { tutorProfileRouter } from "./modules/tutorProfile/tutorProfile.router.js";
+import { bookingRouter } from "./modules/booking/booking.router.js";
+import { reviewRouter } from "./modules/review/review.router.js";
 
 const app: Application = express();
 
@@ -23,7 +23,10 @@ app.use(express.json());
 app.all("/api/auth/*", toNodeHandler(auth));
 
 app.get("/", async (req, res) => {
-  res.send("Hikmify Server Running");
+  res.status(200).json({
+    success: true,
+    message: "The server of Hikmify is running",
+  });
 });
 
 // All Routes
