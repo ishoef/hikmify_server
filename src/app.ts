@@ -23,10 +23,7 @@ app.use(express.json());
 app.all("/api/auth/*", toNodeHandler(auth));
 
 app.get("/", async (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: "The server of Hikmify is running",
-  });
+  res.send("Hikmify Server Running");
 });
 
 // All Routes
