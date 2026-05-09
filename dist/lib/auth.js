@@ -31,6 +31,14 @@ export const auth = betterAuth({
         autoSignIn: true,
         requireEmailVerification: false,
     },
+    socialProviders: {
+        google: {
+            prompt: "select_account consent",
+            accessType: "offline",
+            clientId: process.env.GOOGLE_CLIENT_ID,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        },
+    },
     trustedOrigins: ["http://localhost:3000", "http://localhost:3001"],
 });
 //# sourceMappingURL=auth.js.map
