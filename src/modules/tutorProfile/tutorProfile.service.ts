@@ -1,7 +1,7 @@
 import { prisma } from "../../lib/prisma";
 import { TutorProfile, User } from "../../types/types";
 import { UserRole } from "../../utils/enums";
-import isEqual from "lodash/isEqual";
+import isEqual from "lodash.isequal";
 
 // CREATE Tutor Profile
 const createTutorProfile = async (data: TutorProfile, user: User) => {
